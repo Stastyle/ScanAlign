@@ -1,5 +1,6 @@
 global using System.IO;
 global using System.Numerics;
+global using System.Text;
 global using Xunit;
 
 // Match Core's alias so Plane is unambiguous when both namespaces are in scope.
