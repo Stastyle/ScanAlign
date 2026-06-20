@@ -1,0 +1,28 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <!--
+    All package versions are declared centrally (Wave 0). Tracks reference packages
+    by name only (no Version= on PackageReference). Do not edit project .csproj files
+    to add versions; add the version here and reference by name.
+  -->
+  <ItemGroup>
+    <!-- Core: geometry math -->
+    <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
+
+    <!-- App: MVVM + DI + 3D viewport -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageVersion Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.27.3" />
+
+    <!-- Tests -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>
