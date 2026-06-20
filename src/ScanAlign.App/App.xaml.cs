@@ -38,5 +38,24 @@ public partial class App : Application
 
         _services = services.BuildServiceProvider();
         _services.GetRequiredService<MainWindow>().Show();
+
+        // Optional: open a file passed on the command line (drag-onto-exe / "open with").
+        if (e.Args.Length > 0 && File.Exists(e.Args[0]))
+        {
+            var scene = _services.GetRequiredService<ISceneService>();
+            _ = LoadInitialAsync(scene, e.Args[0]);
+        }
+    }
+
+    private static async Task LoadInitialAsync(ISceneService scene, string path)
+    {
+        try
+        {
+            await scene.LoadAsync(path);
+        }
+        catch
+        {
+            // A bad path on startup shouldn't crash the app; the user can open another file.
+        }
     }
 }

@@ -1,8 +1,17 @@
 # ScanAlign — Implementation Plan (parallel-agent edition)
 
-> **Status: Wave 0 complete ✅** — solution scaffolded, all Core contracts frozen, registries +
-> test harness in place, `dotnet build` and `dotnet test` green (6 tests). The repo is ready to fan out:
-> create the Wave 1 worktrees (§8) and assign agents.
+> **Status: v1 complete ✅** — all waves built sequentially in one session. Core (I/O, solvers,
+> alignment tools, measurement), orchestration, and the WPF app are done; `dotnet build` and
+> `dotnet test` are green (**66 tests**). The app launches and runs the full load→align→export loop.
+> See [README.md](README.md) to build and run.
+>
+> **One deviation from §0:** the 3D viewport uses **native WPF Media3D** (not HelixToolkit). The
+> classic HelixToolkit.Wpf ships only a .NET Framework target (unusable on net8), and the SharpDX
+> variant's API couldn't be verified without a GPU/display in this environment. Native Media3D has
+> zero external 3D dependency and runs anywhere WPF runs; a GPU backend can be swapped in later
+> behind `IViewportController`. The **picking-brush for best-fit-plane** and the **manual nudge
+> gizmo** (T11) are the remaining viewport niceties — point-picking, orbit/pan/zoom, preview, and
+> markers all work today.
 
 Companion to [PLAN.md](PLAN.md). This document breaks the build into **tracks that can run in
 parallel without colliding**. The strategy: one blocking foundation wave freezes every shared
