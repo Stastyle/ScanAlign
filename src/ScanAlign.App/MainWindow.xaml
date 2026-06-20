@@ -4,6 +4,16 @@
         Title="ScanAlign" Height="760" Width="1200"
         Background="{StaticResource WindowBrush}"
         TextOptions.TextFormattingMode="Display">
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenCommand}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
+        <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoCommand}" />
+        <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoCommand}" />
+        <KeyBinding Key="Return" Command="{Binding CommitCommand}" />
+        <KeyBinding Key="Escape" Command="{Binding ClearPicksCommand}" />
+        <KeyBinding Key="Back" Command="{Binding RemoveLastPickCommand}" />
+        <KeyBinding Key="Delete" Command="{Binding RemoveLastPickCommand}" />
+    </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

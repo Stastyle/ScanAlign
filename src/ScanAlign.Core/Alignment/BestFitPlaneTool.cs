@@ -21,18 +21,21 @@ public sealed class BestFitPlaneTool : IAlignmentTool
 
     public string Id => "best-fit-plane";
     public string Name => "Best-fit plane";
-    public int RequiredPicks => 1;
-    public DatumKind ExpectedDatum => DatumKind.PlaneRegion;
+    public int RequiredPicks => 3;
+    public DatumKind ExpectedDatum => DatumKind.Point;
 
     public AlignmentProposal Solve(IReadOnlyList<Datum> picks, AlignmentTarget target)
     {
+        // Accept either a single brushed region (SupportPoints) or many individually clicked points —
+        // both feed the least-squares fit, which only improves with more samples.
         var region = picks.Count > 0 ? picks[0].SupportPoints : null;
-        if (region is null || region.Count < 3)
+        var points = region is { Count: >= 3 } ? region : picks.Select(p => p.Position).ToList();
+        if (points.Count < 3)
         {
-            return AlignmentProposal.Pending("Brush a flat region (at least 3 points) on the face.");
+            return AlignmentProposal.Pending($"Click points on a flat face — more is better ({points.Count}/3+).");
         }
 
-        var fit = _planeFitter.Fit(region);
+        var fit = _planeFitter.Fit(points);
         return PlaneAlignment.Build(fit, target, "Best-fit plane");
     }
 }

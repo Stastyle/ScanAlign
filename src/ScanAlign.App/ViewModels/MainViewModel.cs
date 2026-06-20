@@ -34,6 +34,7 @@ public sealed class MainViewModel : ObservableObject
         ResetCommand = new RelayCommand(_scene.ResetAlignment, () => _scene.CanUndo);
         CommitCommand = new RelayCommand(_scene.Commit, () => _scene.Proposal is { IsComplete: true });
         ClearPicksCommand = new RelayCommand(_scene.ClearPicks, () => _scene.Picks.Count > 0);
+        RemoveLastPickCommand = new RelayCommand(_scene.RemoveLastPick, () => _scene.Picks.Count > 0);
 
         _scene.Changed += (_, _) => RefreshAll();
     }
@@ -57,6 +58,8 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand CommitCommand { get; }
 
     public RelayCommand ClearPicksCommand { get; }
+
+    public RelayCommand RemoveLastPickCommand { get; }
 
     public ToolItemViewModel? SelectedTool
     {
@@ -222,6 +225,7 @@ public sealed class MainViewModel : ObservableObject
         ResetCommand.NotifyCanExecuteChanged();
         CommitCommand.NotifyCanExecuteChanged();
         ClearPicksCommand.NotifyCanExecuteChanged();
+        RemoveLastPickCommand.NotifyCanExecuteChanged();
     }
 
     private static string FormatTransform(Matrix4x4 m)
