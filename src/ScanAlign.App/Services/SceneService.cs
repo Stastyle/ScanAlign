@@ -191,8 +191,8 @@ public sealed class SceneService : ISceneService
             return null;
         }
 
-        // The whole-mesh tool (PCA auto) needs the current world point cloud as its support set.
-        if (ActiveTool.Id == "pca-auto")
+        // Whole-mesh tools (PCA auto, drop-to-floor) need the current world point cloud as input.
+        if (ActiveTool.Id is "pca-auto" or "drop-to-floor")
         {
             var world = Current.ToWorld().Vertices;
             var datum = new Datum(DatumKind.PlaneRegion, Vector3.Zero, SupportPoints: world);
