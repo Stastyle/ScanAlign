@@ -2,8 +2,12 @@
 
 > **Status: v1 complete ✅** — all waves built sequentially in one session. Core (I/O, solvers,
 > alignment tools, measurement), orchestration, and the WPF app are done; `dotnet build` and
-> `dotnet test` are green (**66 tests**). The app launches and runs the full load→align→export loop.
-> See [README.md](README.md) to build and run.
+> `dotnet test` are green (**75 tests**, incl. a 3-format end-to-end pipeline test). The app launches
+> and runs the full load→align→export loop. See [README.md](README.md) to build and run.
+>
+> **7 alignment tools ship** (all auto-discovered by the rail): 3-point plane, best-fit plane,
+> 2-point/2-hole line, point→origin, PCA auto, **3-2-1 fixturing**, and **drop-to-floor**. Adding the
+> next one is still just adding a class.
 >
 > **One deviation from §0:** the 3D viewport uses **native WPF Media3D** (not HelixToolkit). The
 > classic HelixToolkit.Wpf ships only a .NET Framework target (unusable on net8), and the SharpDX
