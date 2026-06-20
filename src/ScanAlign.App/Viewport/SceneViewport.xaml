@@ -1,0 +1,21 @@
+<UserControl x:Class="ScanAlign.App.Viewport.SceneViewport"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="True" Background="#15171A">
+    <Grid>
+        <Viewport3D x:Name="View" ClipToBounds="True">
+            <Viewport3D.Camera>
+                <PerspectiveCamera x:Name="Cam" FieldOfView="45" NearPlaneDistance="0.01" FarPlaneDistance="1000000" />
+            </Viewport3D.Camera>
+            <ModelVisual3D x:Name="LightsRoot" />
+            <ModelVisual3D x:Name="StaticRoot" />
+            <ModelVisual3D x:Name="SceneRoot" />
+        </Viewport3D>
+
+        <Border Background="#CC232629" CornerRadius="6" Padding="9,5" Margin="10"
+                HorizontalAlignment="Left" VerticalAlignment="Top">
+            <TextBlock x:Name="HintText" Foreground="#C6CAD0" FontSize="12"
+                       Text="Open a scan (OBJ · PLY · STL) to begin." />
+        </Border>
+    </Grid>
+</UserControl>

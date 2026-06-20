@@ -14,10 +14,12 @@
     <!-- Core: geometry math -->
     <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
 
-    <!-- App: MVVM + DI + 3D viewport -->
+    <!-- App: MVVM + DI. The 3D viewport uses native WPF Media3D (built into the Windows Desktop
+         SDK) with a hand-written orbit camera — zero external 3D dependency, runs anywhere WPF
+         runs. A future perf pass can swap to a GPU backend behind IViewportController for very
+         large meshes. -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageVersion Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.27.3" />
 
     <!-- Tests -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />

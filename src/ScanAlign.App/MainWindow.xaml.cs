@@ -1,15 +1,16 @@
 using System.Windows;
+using ScanAlign.App.ViewModels;
+using ScanAlign.App.Viewport;
 
 namespace ScanAlign.App;
 
-/// <summary>
-/// Wave 0 placeholder window. Track B (App Foundation) replaces this with the frozen
-/// four-zone layout (toolbar, left rail, viewport, inspector, status bar).
-/// </summary>
+/// <summary>The four-zone shell: toolbar, tool rail, 3D viewport, inspector, status bar.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(MainViewModel viewModel, SceneViewport viewport)
     {
         InitializeComponent();
+        DataContext = viewModel;
+        ViewportHost.Content = viewport;
     }
 }
