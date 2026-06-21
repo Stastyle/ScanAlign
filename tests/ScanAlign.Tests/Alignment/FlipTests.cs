@@ -17,7 +17,8 @@ public class FlipTests
         var planeNormal = Vector3.Normalize(Vector3.Cross(
             picks[1].Position - picks[0].Position, picks[2].Position - picks[0].Position));
 
-        var target = new AlignmentTarget(TargetKind.PlaneXY, OriginPolicy.PlaneOrigin, UpAxis.Z, Flip: flip);
+        // Flip about X turns a +Z-facing plane to face -Z.
+        var target = new AlignmentTarget(TargetKind.PlaneXY, OriginPolicy.PlaneOrigin, UpAxis.Z, FlipX: flip);
         var proposal = new ThreePointPlaneTool().Solve(picks, target);
         var mapped = Vector3.Normalize(Vector3.TransformNormal(planeNormal, proposal.Transform));
         return (mapped, planeNormal);
@@ -45,7 +46,8 @@ public class FlipTests
             new Datum(DatumKind.Point, new Vector3(0, 0, 0)),
             new Datum(DatumKind.Point, new Vector3(0, 5, 0)),
         };
-        var target = new AlignmentTarget(TargetKind.AxisX, OriginPolicy.Keep, UpAxis.Z, Flip: flip);
+        // Flip about Z turns a line pointing +X to point -X.
+        var target = new AlignmentTarget(TargetKind.AxisX, OriginPolicy.Keep, UpAxis.Z, FlipZ: flip);
         var proposal = new TwoPointLineTool().Solve(picks, target);
         var a = Vector3.Transform(picks[0].Position, proposal.Transform);
         var b = Vector3.Transform(picks[1].Position, proposal.Transform);
@@ -62,6 +64,21 @@ public class FlipTests
     public void Line_with_flip_points_along_minus_axis()
     {
         Assert.True(AlignLineToX(flip: true).X < -0.999f);
+    }
+
+    [Fact]
+    public void Two_flips_equal_the_third()
+    {
+        // A line along +Y aligned to X; flipping about X and Y together == flipping about Z (-> -X).
+        var picks = new[]
+        {
+            new Datum(DatumKind.Point, new Vector3(0, 0, 0)),
+            new Datum(DatumKind.Point, new Vector3(0, 5, 0)),
+        };
+        var target = new AlignmentTarget(TargetKind.AxisX, OriginPolicy.Keep, UpAxis.Z, FlipX: true, FlipY: true);
+        var p = new TwoPointLineTool().Solve(picks, target);
+        var dir = Vector3.Normalize(Vector3.Transform(picks[1].Position, p.Transform) - Vector3.Transform(picks[0].Position, p.Transform));
+        Assert.True(dir.X < -0.999f, $"X+Y flip should equal Z flip (-X), got {dir}");
     }
 }
 

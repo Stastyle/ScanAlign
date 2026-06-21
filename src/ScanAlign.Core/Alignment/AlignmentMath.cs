@@ -80,6 +80,31 @@ public static class AlignmentMath
     public static bool MovesToOrigin(OriginPolicy origin) =>
         origin is OriginPolicy.PlaneOrigin or OriginPolicy.PickedPoint or OriginPolicy.BBoxCenter;
 
+    /// <summary>
+    /// A composite 180° flip about any combination of world axes — applied after alignment to flip the
+    /// part's facing. (Note two flips equal the third, so this spans the four valid orientations.)
+    /// </summary>
+    public static Matrix4x4 FlipRotation(bool flipX, bool flipY, bool flipZ)
+    {
+        var m = Matrix4x4.Identity;
+        if (flipX)
+        {
+            m *= Matrix4x4.CreateRotationX(MathF.PI);
+        }
+
+        if (flipY)
+        {
+            m *= Matrix4x4.CreateRotationY(MathF.PI);
+        }
+
+        if (flipZ)
+        {
+            m *= Matrix4x4.CreateRotationZ(MathF.PI);
+        }
+
+        return m;
+    }
+
     /// <summary>The world axis a target resolves to for line alignment (X/Y/Z).</summary>
     public static Vector3 AxisDirection(TargetKind kind) => kind switch
     {

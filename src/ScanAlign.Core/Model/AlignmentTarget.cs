@@ -47,15 +47,18 @@ public enum AxisPlacement
 }
 
 /// <summary>
-/// The target an alignment tool maps its datums onto. <paramref name="Flip"/> reverses the target
-/// direction for plane snapping (normal -Z vs +Z). <paramref name="Placement"/> chooses whether the
-/// element is only made parallel to the target or actually placed on it.
+/// The target an alignment tool maps its datums onto. <paramref name="FlipX"/>/<paramref name="FlipY"/>/
+/// <paramref name="FlipZ"/> add a 180° turn about that world axis after alignment, to correct a part
+/// that came out facing the wrong way (any axis, independently). <paramref name="Placement"/> chooses
+/// whether the element is only made parallel to the target or actually placed on it.
 /// </summary>
 public sealed record AlignmentTarget(
     TargetKind Kind,
     OriginPolicy Origin,
     UpAxis Up,
-    bool Flip = false,
+    bool FlipX = false,
+    bool FlipY = false,
+    bool FlipZ = false,
     AxisPlacement Placement = AxisPlacement.Parallel)
 {
     /// <summary>Default target: snap a face to XY (normal to +Z), Z-up, origin unchanged.</summary>

@@ -19,7 +19,9 @@ public sealed class MainViewModel : ObservableObject
     private ToolItemViewModel? _selectedTool;
     private TargetOption _selectedTarget = null!;
     private OriginOption _selectedOrigin = null!;
-    private bool _flip;
+    private bool _flipX;
+    private bool _flipY;
+    private bool _flipZ;
     private bool _onAxis;
 
     public MainViewModel(ISceneService scene, IDialogService dialogs)
@@ -122,12 +124,36 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
-    public bool Flip
+    public bool FlipX
     {
-        get => _flip;
+        get => _flipX;
         set
         {
-            if (SetProperty(ref _flip, value))
+            if (SetProperty(ref _flipX, value))
+            {
+                PushTarget();
+            }
+        }
+    }
+
+    public bool FlipY
+    {
+        get => _flipY;
+        set
+        {
+            if (SetProperty(ref _flipY, value))
+            {
+                PushTarget();
+            }
+        }
+    }
+
+    public bool FlipZ
+    {
+        get => _flipZ;
+        set
+        {
+            if (SetProperty(ref _flipZ, value))
             {
                 PushTarget();
             }
@@ -240,7 +266,8 @@ public sealed class MainViewModel : ObservableObject
 
     private void PushTarget() =>
         _scene.Target = new AlignmentTarget(
-            _selectedTarget.Value, _selectedOrigin.Value, UpAxis.Z, _flip,
+            _selectedTarget.Value, _selectedOrigin.Value, UpAxis.Z,
+            _flipX, _flipY, _flipZ,
             _onAxis ? AxisPlacement.OnAxis : AxisPlacement.Parallel);
 
     private async Task OpenAsync()

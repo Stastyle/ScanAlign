@@ -14,12 +14,8 @@ internal static class LineAlignment
         }
 
         var axis = AlignmentMath.AxisDirection(target.Kind);
-        if (target.Flip)
-        {
-            axis = -axis; // point the line the other way along the axis
-        }
-
-        var rotation = AlignmentMath.RotationFromTo(Vector3.Normalize(dir), axis);
+        var rotation = AlignmentMath.RotationFromTo(Vector3.Normalize(dir), axis)
+            * AlignmentMath.FlipRotation(target.FlipX, target.FlipY, target.FlipZ);
 
         // Anchor: the first point, or the midpoint when moving to the origin.
         var reference = target.Origin == OriginPolicy.Keep ? a : (a + b) * 0.5f;

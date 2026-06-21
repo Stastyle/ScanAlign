@@ -9,12 +9,8 @@ internal static class PlaneAlignment
     public static AlignmentProposal Build(PlaneFitResult fit, AlignmentTarget target, string label)
     {
         var targetNormal = AlignmentMath.TargetDirection(target.Kind);
-        if (target.Flip)
-        {
-            targetNormal = -targetNormal;
-        }
-
-        var rotation = AlignmentMath.RotationFromTo(fit.Plane.Normal, targetNormal);
+        var rotation = AlignmentMath.RotationFromTo(fit.Plane.Normal, targetNormal)
+            * AlignmentMath.FlipRotation(target.FlipX, target.FlipY, target.FlipZ);
         var reference = fit.Plane.Point;
 
         var finalRef = AlignmentMath.MovesToOrigin(target.Origin) ? Vector3.Zero : reference;
