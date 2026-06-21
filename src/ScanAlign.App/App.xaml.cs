@@ -22,20 +22,7 @@ public partial class App : Application
         base.OnStartup(e);
 
         var services = new ServiceCollection();
-
-        // Core (discovered by reflection over the Core assembly).
-        services.AddSingleton<MeshFormatRegistry>();
-        services.AddSingleton<AlignmentToolRegistry>();
-        services.AddSingleton<IUnitDetector, UnitDetector>();
-        services.AddSingleton<IBoundingBox, BoundingBox>();
-
-        // App.
-        services.AddSingleton<ISceneService, SceneService>();
-        services.AddSingleton<IDialogService, WpfDialogService>();
-        services.AddSingleton<MainViewModel>();
-        services.AddSingleton<SceneViewport>();
-        services.AddSingleton<MainWindow>();
-
+        ConfigureServices(services);
         _services = services.BuildServiceProvider();
         _services.GetRequiredService<MainWindow>().Show();
 
@@ -45,6 +32,27 @@ public partial class App : Application
             var scene = _services.GetRequiredService<ISceneService>();
             _ = LoadInitialAsync(scene, e.Args[0]);
         }
+    }
+
+    /// <summary>
+    /// Registers all services. Note the registries use explicit factories so the container invokes
+    /// their parameterless (assembly-scanning) constructor — otherwise DI would pick the greedier
+    /// <c>IEnumerable&lt;Assembly&gt;</c> constructor and resolve it to an empty list, discovering nothing.
+    /// </summary>
+    public static void ConfigureServices(IServiceCollection services)
+    {
+        // Core (discovered by reflection over the Core assembly).
+        services.AddSingleton(_ => new MeshFormatRegistry());
+        services.AddSingleton(_ => new AlignmentToolRegistry());
+        services.AddSingleton<IUnitDetector, UnitDetector>();
+        services.AddSingleton<IBoundingBox, BoundingBox>();
+
+        // App.
+        services.AddSingleton<ISceneService, SceneService>();
+        services.AddSingleton<IDialogService, WpfDialogService>();
+        services.AddSingleton<MainViewModel>();
+        services.AddSingleton<SceneViewport>();
+        services.AddSingleton<MainWindow>();
     }
 
     private static async Task LoadInitialAsync(ISceneService scene, string path)
