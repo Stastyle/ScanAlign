@@ -28,6 +28,9 @@ public partial class SceneViewport : UserControl
     private MouseButton _dragButton;
     private SceneObject? _framed;
 
+    // The actual model visual — only this is pickable (not the grid, axes, markers, or preview ghost).
+    private ModelVisual3D? _modelVisual;
+
     public SceneViewport(ISceneService scene)
     {
         _scene = scene;
@@ -60,6 +63,7 @@ public partial class SceneViewport : UserControl
     {
         StaticRoot.Children.Clear();
         SceneRoot.Children.Clear();
+        _modelVisual = null;
 
         var extent = ExtentHint();
         AddModel(StaticRoot, GridBuilder.BuildGrid(extent * 0.75f, 10), Emissive(Color.FromRgb(0x2A, 0x2E, 0x33)));
@@ -73,12 +77,12 @@ public partial class SceneViewport : UserControl
             var world = scene.World;
             if (scene.Original.IsPointCloud)
             {
-                AddModel(SceneRoot, Media3DBuilder.BuildPointCloud(scene.Original, world, extent * 0.004f), Emissive(Steel));
+                _modelVisual = AddModel(SceneRoot, Media3DBuilder.BuildPointCloud(scene.Original, world, extent * 0.004f), Emissive(Steel));
             }
             else
             {
                 var surface = Diffuse(Steel);
-                AddModel(SceneRoot, Media3DBuilder.BuildSurface(scene.Original, world), surface, surface);
+                _modelVisual = AddModel(SceneRoot, Media3DBuilder.BuildSurface(scene.Original, world), surface, surface);
             }
 
             if (_scene.Proposal is { IsComplete: true } proposal && !scene.Original.IsPointCloud)
@@ -224,7 +228,10 @@ public partial class SceneViewport : UserControl
             null,
             result =>
             {
-                if (result is RayMeshGeometry3DHitTestResult ray && ray.DistanceToRayOrigin < bestDist)
+                // Only the original model is pickable — ignore grid, axes, markers, and the preview ghost.
+                if (result is RayMeshGeometry3DHitTestResult ray
+                    && ReferenceEquals(ray.VisualHit, _modelVisual)
+                    && ray.DistanceToRayOrigin < bestDist)
                 {
                     bestDist = ray.DistanceToRayOrigin;
                     best = ray.PointHit;
@@ -240,12 +247,14 @@ public partial class SceneViewport : UserControl
         }
     }
 
-    private static void AddModel(ModelVisual3D root, Geometry3D geometry, Material material, Material? back = null)
+    private static ModelVisual3D AddModel(ModelVisual3D root, Geometry3D geometry, Material material, Material? back = null)
     {
-        root.Children.Add(new ModelVisual3D
+        var visual = new ModelVisual3D
         {
             Content = new GeometryModel3D(geometry, material) { BackMaterial = back ?? material },
-        });
+        };
+        root.Children.Add(visual);
+        return visual;
     }
 
     private static Material Diffuse(Color color) => new DiffuseMaterial(new SolidColorBrush(color));
