@@ -36,4 +36,32 @@ public class FlipTests
         var (mapped, _) = AlignFlat(flip: true);
         Assert.True(mapped.Z < -0.999f, $"expected -Z, got {mapped}");
     }
+
+    private static Vector3 AlignLineToX(bool flip)
+    {
+        // A line along +Y, aligned to the X axis.
+        var picks = new[]
+        {
+            new Datum(DatumKind.Point, new Vector3(0, 0, 0)),
+            new Datum(DatumKind.Point, new Vector3(0, 5, 0)),
+        };
+        var target = new AlignmentTarget(TargetKind.AxisX, OriginPolicy.Keep, UpAxis.Z, Flip: flip);
+        var proposal = new TwoPointLineTool().Solve(picks, target);
+        var a = Vector3.Transform(picks[0].Position, proposal.Transform);
+        var b = Vector3.Transform(picks[1].Position, proposal.Transform);
+        return Vector3.Normalize(b - a);
+    }
+
+    [Fact]
+    public void Line_without_flip_points_along_plus_axis()
+    {
+        Assert.True(AlignLineToX(flip: false).X > 0.999f);
+    }
+
+    [Fact]
+    public void Line_with_flip_points_along_minus_axis()
+    {
+        Assert.True(AlignLineToX(flip: true).X < -0.999f);
+    }
 }
+

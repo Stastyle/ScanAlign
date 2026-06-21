@@ -74,9 +74,9 @@
                     <TextBlock Text="{Binding OriginDescription}" Foreground="{StaticResource TextSecondaryBrush}"
                                FontSize="11" TextWrapping="Wrap" Margin="2,3,2,2" />
 
-                    <CheckBox Content="Flip face direction" IsChecked="{Binding Flip}" Margin="2,8,0,0"
+                    <CheckBox Content="Flip direction" IsChecked="{Binding Flip}" Margin="2,8,0,0"
                               Foreground="{StaticResource TextPrimaryBrush}"
-                              ToolTip="Reverse which side of the face points toward the target (normal +Z vs -Z)." />
+                              ToolTip="Reverse the target direction: a face's normal +Z vs -Z, or a line pointing +axis vs -axis. Use it when the part comes out facing the wrong way." />
                     <CheckBox Content="Place on axis/plane (not just parallel)" IsChecked="{Binding OnAxis}" Margin="2,4,0,0"
                               Foreground="{StaticResource TextPrimaryBrush}"
                               ToolTip="On: the line lies on the axis / the face lies in the plane. Off: only made parallel to it." />
