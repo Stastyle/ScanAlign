@@ -15,8 +15,16 @@ internal static class PlaneAlignment
         }
 
         var rotation = AlignmentMath.RotationFromTo(fit.Plane.Normal, targetNormal);
-        var transform = AlignmentMath.Compose(rotation, fit.Plane.Point, target.Origin);
+        var reference = fit.Plane.Point;
 
+        var finalRef = AlignmentMath.MovesToOrigin(target.Origin) ? Vector3.Zero : reference;
+        if (target.Placement == AxisPlacement.OnAxis)
+        {
+            // Coincident: drop the component along the normal so the face lies *in* the target plane.
+            finalRef -= targetNormal * Vector3.Dot(finalRef, targetNormal);
+        }
+
+        var transform = AlignmentMath.ComposeOriented(rotation, reference, finalRef);
         var explanation = $"{label} → {target.Kind} (RMS {fit.Rms:0.###})";
         return new AlignmentProposal(transform, fit.Rms, explanation, IsComplete: true);
     }

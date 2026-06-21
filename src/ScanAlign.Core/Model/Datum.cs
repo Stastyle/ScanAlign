@@ -14,6 +14,12 @@ public enum DatumKind
 
     /// <summary>The center of a hole/circle (typically derived by fitting its rim).</summary>
     HoleCenter,
+
+    /// <summary>
+    /// A center derived by averaging a cluster of clicked points — more points converge on the true
+    /// center of a circle or pocket. Tools expecting this kind collect points into groups.
+    /// </summary>
+    Centroid,
 }
 
 /// <summary>

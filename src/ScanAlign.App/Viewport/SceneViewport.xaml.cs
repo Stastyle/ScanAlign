@@ -17,6 +17,7 @@ public partial class SceneViewport : UserControl
 {
     private static readonly Color Teal = Color.FromRgb(0x2D, 0xD4, 0xBF);
     private static readonly Color Steel = Color.FromRgb(0x9A, 0xA0, 0xA8);
+    private static readonly Color Amber = Color.FromRgb(0xEF, 0x9F, 0x27);
 
     private readonly ISceneService _scene;
     private readonly OrbitCamera _orbit = new();
@@ -86,9 +87,15 @@ public partial class SceneViewport : UserControl
                 AddModel(SceneRoot, Media3DBuilder.BuildSurface(scene.Original, world * proposal.Transform), preview, preview);
             }
 
-            if (_scene.Picks.Count > 0)
+            if (_scene.AllPickedPoints.Count > 0)
             {
-                AddModel(SceneRoot, Media3DBuilder.BuildMarkers(_scene.Picks.Select(p => p.Position), extent * 0.02f), Emissive(Teal));
+                AddModel(SceneRoot, Media3DBuilder.BuildMarkers(_scene.AllPickedPoints, extent * 0.012f), Emissive(Teal));
+            }
+
+            // For centroid tools, show the averaged centers larger and in amber.
+            if (_scene.IsCentroidTool && _scene.Centroids.Count > 0)
+            {
+                AddModel(SceneRoot, Media3DBuilder.BuildMarkers(_scene.Centroids, extent * 0.028f), Emissive(Amber));
             }
 
             FrameIfNew(scene);

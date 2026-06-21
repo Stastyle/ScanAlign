@@ -35,11 +35,28 @@ public enum UpAxis
 }
 
 /// <summary>
-/// The target an alignment tool maps its datums onto. <paramref name="Flip"/> reverses the target
-/// direction for plane snapping (e.g. the face's normal points to -Z instead of +Z), so the user can
-/// choose which side of the plane faces up.
+/// Whether the aligned element only matches the target's orientation or is also moved onto it.
 /// </summary>
-public sealed record AlignmentTarget(TargetKind Kind, OriginPolicy Origin, UpAxis Up, bool Flip = false)
+public enum AxisPlacement
+{
+    /// <summary>Match orientation only — the element stays at its current offset (just parallel).</summary>
+    Parallel,
+
+    /// <summary>Lie on the target: a line sits on the axis; a face lies in the plane (coincident).</summary>
+    OnAxis,
+}
+
+/// <summary>
+/// The target an alignment tool maps its datums onto. <paramref name="Flip"/> reverses the target
+/// direction for plane snapping (normal -Z vs +Z). <paramref name="Placement"/> chooses whether the
+/// element is only made parallel to the target or actually placed on it.
+/// </summary>
+public sealed record AlignmentTarget(
+    TargetKind Kind,
+    OriginPolicy Origin,
+    UpAxis Up,
+    bool Flip = false,
+    AxisPlacement Placement = AxisPlacement.Parallel)
 {
     /// <summary>Default target: snap a face to XY (normal to +Z), Z-up, origin unchanged.</summary>
     public static AlignmentTarget Default { get; } =

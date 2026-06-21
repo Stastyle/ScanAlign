@@ -14,6 +14,9 @@
         <KeyBinding Key="Back" Command="{Binding RemoveLastPickCommand}" />
         <KeyBinding Key="Delete" Command="{Binding RemoveLastPickCommand}" />
     </Window.InputBindings>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -74,6 +77,9 @@
                     <CheckBox Content="Flip face direction" IsChecked="{Binding Flip}" Margin="2,8,0,0"
                               Foreground="{StaticResource TextPrimaryBrush}"
                               ToolTip="Reverse which side of the face points toward the target (normal +Z vs -Z)." />
+                    <CheckBox Content="Place on axis/plane (not just parallel)" IsChecked="{Binding OnAxis}" Margin="2,4,0,0"
+                              Foreground="{StaticResource TextPrimaryBrush}"
+                              ToolTip="On: the line lies on the axis / the face lies in the plane. Off: only made parallel to it." />
 
                     <TextBlock Text="{Binding PickInfo}" Margin="2,10,0,0" Foreground="{StaticResource AccentBrush}" />
                     <TextBlock Text="{Binding ResidualText}" Margin="2,2,0,0" Foreground="{StaticResource TextSecondaryBrush}" />
@@ -81,6 +87,9 @@
                     <TextBlock Text="Transform" Style="{StaticResource SectionLabel}" />
                     <TextBlock Text="{Binding TransformText}" FontFamily="Consolas" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
 
+                    <Button Content="New center" Command="{Binding NewCenterCommand}" Margin="0,12,0,0" HorizontalAlignment="Stretch"
+                            Visibility="{Binding IsCentroidTool, Converter={StaticResource BoolToVis}}"
+                            ToolTip="Finish this center and start clicking points for the next feature." />
                     <Button Content="Commit" Command="{Binding CommitCommand}" Style="{StaticResource AccentButton}" Margin="0,12,0,0" HorizontalAlignment="Stretch" />
                     <Button Content="Clear picks" Command="{Binding ClearPicksCommand}" Margin="0,6,0,0" HorizontalAlignment="Stretch" />
 

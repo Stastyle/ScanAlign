@@ -67,4 +67,24 @@ public static class AlignmentMath
             _ => Matrix4x4.CreateTranslation(-reference) * rotation * Matrix4x4.CreateTranslation(reference),
         };
     }
+
+    /// <summary>
+    /// Compose so that, after rotation, the anchor <paramref name="reference"/> lands exactly at
+    /// <paramref name="finalReference"/>. This drives the parallel-vs-on-axis placement: callers
+    /// choose the final anchor (its current spot, the origin, or its projection onto the target).
+    /// </summary>
+    public static Matrix4x4 ComposeOriented(Matrix4x4 rotation, Vector3 reference, Vector3 finalReference) =>
+        Matrix4x4.CreateTranslation(-reference) * rotation * Matrix4x4.CreateTranslation(finalReference);
+
+    /// <summary>True when the origin policy means "move the anchor to the world origin".</summary>
+    public static bool MovesToOrigin(OriginPolicy origin) =>
+        origin is OriginPolicy.PlaneOrigin or OriginPolicy.PickedPoint or OriginPolicy.BBoxCenter;
+
+    /// <summary>The world axis a target resolves to for line alignment (X/Y/Z).</summary>
+    public static Vector3 AxisDirection(TargetKind kind) => kind switch
+    {
+        TargetKind.AxisX or TargetKind.PlaneYZ => Vector3.UnitX,
+        TargetKind.AxisY or TargetKind.PlaneXZ => Vector3.UnitY,
+        _ => Vector3.UnitZ,
+    };
 }

@@ -21,6 +21,18 @@ public interface ISceneService
 
     IReadOnlyList<Datum> Picks { get; }
 
+    /// <summary>Every raw clicked point, for rendering pick markers.</summary>
+    IReadOnlyList<Vector3> AllPickedPoints { get; }
+
+    /// <summary>The averaged center of each pick group, for rendering center markers.</summary>
+    IReadOnlyList<Vector3> Centroids { get; }
+
+    /// <summary>True when the active tool averages clusters of points into centers.</summary>
+    bool IsCentroidTool { get; }
+
+    /// <summary>Points in the current cluster being built (centroid tools).</summary>
+    int CurrentClusterSize { get; }
+
     /// <summary>The live proposal for the current tool/picks/target, or null when not applicable.</summary>
     AlignmentProposal? Proposal { get; }
 
@@ -40,6 +52,9 @@ public interface ISceneService
     void SelectTool(string? id);
 
     void AddPick(Datum datum);
+
+    /// <summary>Finalize the current center cluster and start a new one (centroid tools).</summary>
+    void StartNewCenter();
 
     void RemoveLastPick();
 

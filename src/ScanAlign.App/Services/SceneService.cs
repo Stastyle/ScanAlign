@@ -13,7 +13,9 @@ public sealed class SceneService : ISceneService
     private readonly IUnitDetector _unitDetector;
     private readonly IBoundingBox _boundingBox;
 
-    private readonly List<Datum> _picks = new();
+    // Picks are organized into groups. For point-mode tools each click is its own group; for
+    // centroid tools clicks accumulate in the current group until the user starts a new center.
+    private readonly List<List<Vector3>> _groups = new();
     private readonly Stack<AlignmentStep> _redo = new();
 
     private AlignmentTarget _target = AlignmentTarget.Default;
@@ -46,7 +48,25 @@ public sealed class SceneService : ISceneService
         }
     }
 
-    public IReadOnlyList<Datum> Picks => _picks;
+    private bool CentroidMode => ActiveTool?.ExpectedDatum == DatumKind.Centroid;
+
+    /// <summary>One datum per non-empty group: its averaged center, with the raw points attached.</summary>
+    public IReadOnlyList<Datum> Picks => _groups
+        .Where(g => g.Count > 0)
+        .Select(g => new Datum(CentroidMode ? DatumKind.Centroid : DatumKind.Point, Centroid(g), SupportPoints: g.ToList()))
+        .ToList();
+
+    /// <summary>Every raw clicked point (across all groups), for rendering pick markers.</summary>
+    public IReadOnlyList<Vector3> AllPickedPoints => _groups.SelectMany(g => g).ToList();
+
+    /// <summary>The averaged center of each non-empty group, for rendering center markers.</summary>
+    public IReadOnlyList<Vector3> Centroids => _groups.Where(g => g.Count > 0).Select(Centroid).ToList();
+
+    /// <summary>True when the active tool clusters points into averaged centers.</summary>
+    public bool IsCentroidTool => CentroidMode;
+
+    /// <summary>Number of points in the current (last) group being built.</summary>
+    public int CurrentClusterSize => _groups.Count > 0 ? _groups[^1].Count : 0;
 
     public AlignmentProposal? Proposal { get; private set; }
 
@@ -80,7 +100,7 @@ public sealed class SceneService : ISceneService
         }
 
         Current = new SceneObject(mesh);
-        _picks.Clear();
+        _groups.Clear();
         _redo.Clear();
         Recompute();
     }
@@ -107,30 +127,66 @@ public sealed class SceneService : ISceneService
     public void SelectTool(string? id)
     {
         ActiveTool = id is null ? null : Tools.FirstOrDefault(t => t.Id == id);
-        _picks.Clear();
+        _groups.Clear();
         Recompute();
     }
 
     public void AddPick(Datum datum)
     {
-        _picks.Add(datum);
+        var p = datum.Position;
+        if (CentroidMode)
+        {
+            // Accumulate into the current center cluster.
+            if (_groups.Count == 0)
+            {
+                _groups.Add(new List<Vector3>());
+            }
+
+            _groups[^1].Add(p);
+        }
+        else
+        {
+            // Each click is its own datum.
+            _groups.Add(new List<Vector3> { p });
+        }
+
         Recompute();
+    }
+
+    /// <summary>Finalize the current center cluster and begin a new one (centroid tools only).</summary>
+    public void StartNewCenter()
+    {
+        if (CentroidMode && _groups.Count > 0 && _groups[^1].Count > 0)
+        {
+            _groups.Add(new List<Vector3>());
+            Recompute();
+        }
     }
 
     public void RemoveLastPick()
     {
-        if (_picks.Count > 0)
+        // Drop the most recent raw point; clean up an emptied trailing group.
+        for (var i = _groups.Count - 1; i >= 0; i--)
         {
-            _picks.RemoveAt(_picks.Count - 1);
-            Recompute();
+            if (_groups[i].Count > 0)
+            {
+                _groups[i].RemoveAt(_groups[i].Count - 1);
+                if (_groups[i].Count == 0 && i == _groups.Count - 1)
+                {
+                    _groups.RemoveAt(i);
+                }
+
+                Recompute();
+                return;
+            }
         }
     }
 
     public void ClearPicks()
     {
-        if (_picks.Count > 0)
+        if (_groups.Count > 0)
         {
-            _picks.Clear();
+            _groups.Clear();
             Recompute();
         }
     }
@@ -144,7 +200,7 @@ public sealed class SceneService : ISceneService
 
         Current.Stack.Push(AlignmentStep.Create(proposal.Transform, proposal.Explanation, proposal.Residual));
         _redo.Clear();
-        _picks.Clear();
+        _groups.Clear();
         Recompute();
     }
 
@@ -199,7 +255,18 @@ public sealed class SceneService : ISceneService
             return ActiveTool.Solve(new[] { datum }, _target);
         }
 
-        return ActiveTool.Solve(_picks, _target);
+        return ActiveTool.Solve(Picks, _target);
+    }
+
+    private static Vector3 Centroid(IReadOnlyList<Vector3> pts)
+    {
+        var sum = Vector3.Zero;
+        foreach (var p in pts)
+        {
+            sum += p;
+        }
+
+        return sum / pts.Count;
     }
 
     private static string BuildProvenance(SceneObject scene)

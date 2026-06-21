@@ -20,6 +20,7 @@ public sealed class MainViewModel : ObservableObject
     private TargetOption _selectedTarget = null!;
     private OriginOption _selectedOrigin = null!;
     private bool _flip;
+    private bool _onAxis;
 
     public MainViewModel(ISceneService scene, IDialogService dialogs)
     {
@@ -34,8 +35,9 @@ public sealed class MainViewModel : ObservableObject
         RedoCommand = new RelayCommand(_scene.Redo, () => _scene.CanRedo);
         ResetCommand = new RelayCommand(_scene.ResetAlignment, () => _scene.CanUndo);
         CommitCommand = new RelayCommand(_scene.Commit, () => _scene.Proposal is { IsComplete: true });
-        ClearPicksCommand = new RelayCommand(_scene.ClearPicks, () => _scene.Picks.Count > 0);
-        RemoveLastPickCommand = new RelayCommand(_scene.RemoveLastPick, () => _scene.Picks.Count > 0);
+        ClearPicksCommand = new RelayCommand(_scene.ClearPicks, () => _scene.Picks.Count > 0 || _scene.CurrentClusterSize > 0);
+        RemoveLastPickCommand = new RelayCommand(_scene.RemoveLastPick, () => _scene.AllPickedPoints.Count > 0);
+        NewCenterCommand = new RelayCommand(_scene.StartNewCenter, () => _scene.IsCentroidTool && _scene.CurrentClusterSize > 0);
 
         _scene.Changed += (_, _) => RefreshAll();
 
@@ -79,6 +81,8 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand ClearPicksCommand { get; }
 
     public RelayCommand RemoveLastPickCommand { get; }
+
+    public RelayCommand NewCenterCommand { get; }
 
     public ToolItemViewModel? SelectedTool
     {
@@ -130,6 +134,20 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public bool OnAxis
+    {
+        get => _onAxis;
+        set
+        {
+            if (SetProperty(ref _onAxis, value))
+            {
+                PushTarget();
+            }
+        }
+    }
+
+    public bool IsCentroidTool => _scene.IsCentroidTool;
+
     public string TargetDescription => _selectedTarget?.Description ?? string.Empty;
 
     public string OriginDescription => _selectedOrigin?.Description ?? string.Empty;
@@ -161,6 +179,11 @@ public sealed class MainViewModel : ObservableObject
             if (_scene.ActiveTool is not { } tool)
             {
                 return string.Empty;
+            }
+
+            if (_scene.IsCentroidTool)
+            {
+                return $"Centers {_scene.Picks.Count}/{tool.RequiredPicks} · current cluster {_scene.CurrentClusterSize} pts";
             }
 
             return $"Picks {_scene.Picks.Count}/{tool.RequiredPicks}";
@@ -216,7 +239,9 @@ public sealed class MainViewModel : ObservableObject
         _scene.Current?.Stack.Steps.ToArray() ?? Array.Empty<AlignmentStep>();
 
     private void PushTarget() =>
-        _scene.Target = new AlignmentTarget(_selectedTarget.Value, _selectedOrigin.Value, UpAxis.Z, _flip);
+        _scene.Target = new AlignmentTarget(
+            _selectedTarget.Value, _selectedOrigin.Value, UpAxis.Z, _flip,
+            _onAxis ? AxisPlacement.OnAxis : AxisPlacement.Parallel);
 
     private async Task OpenAsync()
     {
@@ -266,6 +291,7 @@ public sealed class MainViewModel : ObservableObject
         CommitCommand.NotifyCanExecuteChanged();
         ClearPicksCommand.NotifyCanExecuteChanged();
         RemoveLastPickCommand.NotifyCanExecuteChanged();
+        NewCenterCommand.NotifyCanExecuteChanged();
     }
 
     private static string FormatTransform(Matrix4x4 m)
