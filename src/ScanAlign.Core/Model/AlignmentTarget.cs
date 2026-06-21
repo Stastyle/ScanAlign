@@ -59,7 +59,8 @@ public sealed record AlignmentTarget(
     bool FlipX = false,
     bool FlipY = false,
     bool FlipZ = false,
-    AxisPlacement Placement = AxisPlacement.Parallel)
+    AxisPlacement Placement = AxisPlacement.Parallel,
+    TargetKind Secondary = TargetKind.AxisX)
 {
     /// <summary>Default target: snap a face to XY (normal to +Z), Z-up, origin unchanged.</summary>
     public static AlignmentTarget Default { get; } =

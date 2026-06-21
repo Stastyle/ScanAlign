@@ -19,6 +19,7 @@ public sealed class MainViewModel : ObservableObject
     private ToolItemViewModel? _selectedTool;
     private TargetOption _selectedTarget = null!;
     private OriginOption _selectedOrigin = null!;
+    private TargetOption _selectedSecondary = null!;
     private bool _flipX;
     private bool _flipY;
     private bool _flipZ;
@@ -45,6 +46,7 @@ public sealed class MainViewModel : ObservableObject
 
         _selectedTarget = TargetOptions[0];
         _selectedOrigin = OriginOptions[0];
+        _selectedSecondary = SecondaryAxisOptions[0];
         PushTarget();
     }
 
@@ -67,6 +69,16 @@ public sealed class MainViewModel : ObservableObject
         new OriginOption("Picked point to origin", "Put the last point you clicked at (0,0,0).", OriginPolicy.PickedPoint),
         new OriginOption("Center bounding box", "Move the part's bounding-box center to (0,0,0).", OriginPolicy.BBoxCenter),
     };
+
+    /// <summary>Which axis the 3-2-1 secondary edge is made parallel to.</summary>
+    public IReadOnlyList<TargetOption> SecondaryAxisOptions { get; } = new[]
+    {
+        new TargetOption("X axis", "The secondary edge becomes parallel to X.", TargetKind.AxisX),
+        new TargetOption("Y axis", "The secondary edge becomes parallel to Y.", TargetKind.AxisY),
+        new TargetOption("Z axis", "The secondary edge becomes parallel to Z.", TargetKind.AxisZ),
+    };
+
+    public bool Is321Tool => _scene.ActiveTool?.Id == "three-two-one";
 
     public AsyncRelayCommand OpenCommand { get; }
 
@@ -174,6 +186,18 @@ public sealed class MainViewModel : ObservableObject
 
     public bool IsCentroidTool => _scene.IsCentroidTool;
 
+    public TargetOption SelectedSecondary
+    {
+        get => _selectedSecondary;
+        set
+        {
+            if (value is not null && SetProperty(ref _selectedSecondary, value))
+            {
+                PushTarget();
+            }
+        }
+    }
+
     public string TargetDescription => _selectedTarget?.Description ?? string.Empty;
 
     public string OriginDescription => _selectedOrigin?.Description ?? string.Empty;
@@ -268,7 +292,8 @@ public sealed class MainViewModel : ObservableObject
         _scene.Target = new AlignmentTarget(
             _selectedTarget.Value, _selectedOrigin.Value, UpAxis.Z,
             _flipX, _flipY, _flipZ,
-            _onAxis ? AxisPlacement.OnAxis : AxisPlacement.Parallel);
+            _onAxis ? AxisPlacement.OnAxis : AxisPlacement.Parallel,
+            _selectedSecondary.Value);
 
     private async Task OpenAsync()
     {

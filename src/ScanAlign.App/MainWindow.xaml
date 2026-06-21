@@ -74,6 +74,13 @@
                     <TextBlock Text="{Binding OriginDescription}" Foreground="{StaticResource TextSecondaryBrush}"
                                FontSize="11" TextWrapping="Wrap" Margin="2,3,2,2" />
 
+                    <StackPanel Visibility="{Binding Is321Tool, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Secondary edge →" Style="{StaticResource SectionLabel}" />
+                        <ComboBox ItemsSource="{Binding SecondaryAxisOptions}" SelectedItem="{Binding SelectedSecondary}"
+                                  DisplayMemberPath="Label"
+                                  ToolTip="In 3-2-1: which axis the 2-point edge is made parallel to. The primary face sets the plane; the third point becomes the origin." />
+                    </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Margin="2,8,0,0"
                                 ToolTip="Add a 180° turn about each world axis to correct a part that came out facing the wrong way. Two flips equal the third.">
                         <TextBlock Text="Flip:" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />

@@ -27,10 +27,12 @@ public class ThreeTwoOneToolTests
         Assert.True(proposal.IsComplete);
         var m = proposal.Transform;
 
-        // Primary plane becomes parallel to XY (near-constant Z), anchored at the origin.
+        // Primary plane becomes parallel to XY (near-constant Z).
         var planeZ = picks.Take(3).Select(d => Vector3.Transform(d.Position, m).Z).ToArray();
         Assert.True(planeZ.Max() - planeZ.Min() < 1e-3f);
-        Assert.True(Vector3.Transform(picks[0].Position, m).Length() < 1e-4f);
+
+        // The tertiary point (index 5) becomes the origin.
+        Assert.True(Vector3.Transform(picks[5].Position, m).Length() < 1e-4f);
 
         // Secondary edge aligns to +X.
         var d0 = Vector3.Transform(picks[3].Position, m);
@@ -38,6 +40,26 @@ public class ThreeTwoOneToolTests
         var dir = Vector3.Normalize(d1 - d0);
         Assert.True(MathF.Abs(dir.X) > 0.999f, $"edge should align to X, got {dir}");
         Assert.True(MathF.Abs(dir.Y) < 1e-3f && MathF.Abs(dir.Z) < 1e-3f);
+    }
+
+    [Fact]
+    public void Secondary_edge_aligns_to_the_chosen_axis()
+    {
+        var local = new[]
+        {
+            new Vector3(0, 0, 0), new Vector3(10, 0, 0), new Vector3(0, 8, 0),
+            new Vector3(2, 4, 0), new Vector3(9, 4, 0),   // edge along local +X
+            new Vector3(3, 3, 0),
+        };
+        var pose = Matrix4x4.CreateRotationY(0.5f) * Matrix4x4.CreateTranslation(10, 20, 30);
+        var picks = local.Select(p => new Datum(DatumKind.Point, Vector3.Transform(p, pose))).ToArray();
+
+        // Primary face → XY, but route the secondary edge to Y instead of the default X.
+        var target = new AlignmentTarget(TargetKind.PlaneXY, OriginPolicy.PlaneOrigin, UpAxis.Z, Secondary: TargetKind.AxisY);
+        var m = new ThreeTwoOneTool().Solve(picks, target).Transform;
+
+        var edge = Vector3.Normalize(Vector3.Transform(picks[4].Position, m) - Vector3.Transform(picks[3].Position, m));
+        Assert.True(MathF.Abs(edge.Y) > 0.999f, $"edge should align to Y, got {edge}");
     }
 
     [Fact]

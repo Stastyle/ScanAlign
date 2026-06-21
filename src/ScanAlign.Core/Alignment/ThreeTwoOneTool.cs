@@ -27,24 +27,25 @@ public sealed class ThreeTwoOneTool : IAlignmentTool
 
     public AlignmentProposal Solve(IReadOnlyList<Datum> picks, AlignmentTarget target)
     {
+        var primaryDir = AlignmentMath.TargetDirection(target.Kind);
+        var secondaryDir = ResolveSecondary(target.Secondary, primaryDir);
+
         if (picks.Count < RequiredPicks)
         {
             var stage = picks.Count switch
             {
-                < 3 => $"Primary plane: click 3 points on the main face ({picks.Count}/3).",
-                < 5 => $"Secondary line: click 2 points along an edge ({picks.Count - 3}/2).",
-                _ => "Tertiary: click 1 point to anchor the origin.",
+                < 3 => $"Primary face: click 3 points on the main flat face — sets {target.Kind} ({picks.Count}/3).",
+                < 5 => $"Secondary edge: click 2 points along a straight edge — made parallel to the {target.Secondary} ({picks.Count - 3}/2).",
+                _ => "Origin point: click 1 point — it becomes (0,0,0).",
             };
             return AlignmentProposal.Pending(stage);
         }
 
         // Primary: fit the plane and rotate its normal onto the primary target direction.
         var fit = _planeFitter.Fit(new[] { picks[0].Position, picks[1].Position, picks[2].Position });
-        var primaryDir = AlignmentMath.TargetDirection(target.Kind);
         var r1 = AlignmentMath.RotationFromTo(fit.Plane.Normal, primaryDir);
 
         // Secondary: spin about the primary axis so the (in-plane) edge direction hits the secondary axis.
-        var secondaryDir = primaryDir == Vector3.UnitX ? Vector3.UnitY : Vector3.UnitX;
         var edge = Vector3.Normalize(Vector3.TransformNormal(picks[4].Position - picks[3].Position, r1));
         var projected = edge - (primaryDir * Vector3.Dot(edge, primaryDir));
 
@@ -60,11 +61,24 @@ public sealed class ThreeTwoOneTool : IAlignmentTool
 
         var rotation = r1 * r2 * AlignmentMath.FlipRotation(target.FlipX, target.FlipY, target.FlipZ);
 
-        // Tertiary point anchors the origin when an explicit-point policy is chosen; otherwise the
-        // primary plane point does.
-        var reference = target.Origin == OriginPolicy.PickedPoint ? picks[5].Position : picks[0].Position;
-        var transform = AlignmentMath.Compose(rotation, reference, target.Origin);
+        // The tertiary point is the datum origin: rotate about it and place it at (0,0,0).
+        var transform = AlignmentMath.ComposeOriented(rotation, picks[5].Position, Vector3.Zero);
 
-        return new AlignmentProposal(transform, fit.Rms, $"3-2-1 fixturing → {target.Kind} (RMS {fit.Rms:0.###})", IsComplete: true);
+        return new AlignmentProposal(
+            transform, fit.Rms,
+            $"3-2-1: face→{target.Kind}, edge→{target.Secondary}, origin set (RMS {fit.Rms:0.###})",
+            IsComplete: true);
+    }
+
+    /// <summary>Pick the secondary in-plane axis; if it's parallel to the primary, fall back to a perpendicular one.</summary>
+    private static Vector3 ResolveSecondary(TargetKind secondary, Vector3 primaryDir)
+    {
+        var dir = AlignmentMath.AxisDirection(secondary);
+        if (MathF.Abs(Vector3.Dot(dir, primaryDir)) > 0.9f)
+        {
+            dir = MathF.Abs(primaryDir.X) < 0.9f ? Vector3.UnitX : Vector3.UnitY;
+        }
+
+        return dir;
     }
 }
