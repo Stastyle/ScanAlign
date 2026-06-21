@@ -62,9 +62,10 @@ public partial class SceneViewport : UserControl
 
         var extent = ExtentHint();
         AddModel(StaticRoot, GridBuilder.BuildGrid(extent * 0.75f, 10), Emissive(Color.FromRgb(0x2A, 0x2E, 0x33)));
+        // Fusion 360 convention: X red, Y green, Z blue.
         AddModel(StaticRoot, GridBuilder.BuildAxis(Vector3.UnitX, extent * 0.6f), Emissive(Color.FromRgb(0xE2, 0x4B, 0x4A)));
-        AddModel(StaticRoot, GridBuilder.BuildAxis(Vector3.UnitY, extent * 0.6f), Emissive(Color.FromRgb(0x37, 0x8A, 0xDD)));
-        AddModel(StaticRoot, GridBuilder.BuildAxis(Vector3.UnitZ, extent * 0.6f), Emissive(Color.FromRgb(0x97, 0xC4, 0x59)));
+        AddModel(StaticRoot, GridBuilder.BuildAxis(Vector3.UnitY, extent * 0.6f), Emissive(Color.FromRgb(0x5C, 0xC4, 0x6A)));
+        AddModel(StaticRoot, GridBuilder.BuildAxis(Vector3.UnitZ, extent * 0.6f), Emissive(Color.FromRgb(0x37, 0x8A, 0xDD)));
 
         if (_scene.Current is { } scene)
         {

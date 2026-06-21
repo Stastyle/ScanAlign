@@ -17,8 +17,9 @@ public sealed class MainViewModel : ObservableObject
     private readonly IDialogService _dialogs;
 
     private ToolItemViewModel? _selectedTool;
-    private TargetKind _selectedTargetKind = TargetKind.PlaneXY;
-    private OriginPolicy _selectedOrigin = OriginPolicy.PlaneOrigin;
+    private TargetOption _selectedTarget = null!;
+    private OriginOption _selectedOrigin = null!;
+    private bool _flip;
 
     public MainViewModel(ISceneService scene, IDialogService dialogs)
     {
@@ -37,13 +38,31 @@ public sealed class MainViewModel : ObservableObject
         RemoveLastPickCommand = new RelayCommand(_scene.RemoveLastPick, () => _scene.Picks.Count > 0);
 
         _scene.Changed += (_, _) => RefreshAll();
+
+        _selectedTarget = TargetOptions[0];
+        _selectedOrigin = OriginOptions[0];
+        PushTarget();
     }
 
     public ObservableCollection<ToolItemViewModel> Tools { get; }
 
-    public IReadOnlyList<TargetKind> TargetKinds { get; } = Enum.GetValues<TargetKind>();
+    public IReadOnlyList<TargetOption> TargetOptions { get; } = new[]
+    {
+        new TargetOption("Face → ground (XY, up +Z)", "Lay the picked face flat on the ground plane; its normal points up (+Z). The usual choice for Fusion.", TargetKind.PlaneXY),
+        new TargetOption("Face → XZ (normal +Y)", "Make the picked face parallel to the XZ plane (normal along +Y).", TargetKind.PlaneXZ),
+        new TargetOption("Face → YZ (normal +X)", "Make the picked face parallel to the YZ plane (normal along +X).", TargetKind.PlaneYZ),
+        new TargetOption("Line → X axis", "Make the picked line / two holes parallel to the X axis.", TargetKind.AxisX),
+        new TargetOption("Line → Y axis", "Make the picked line / two holes parallel to the Y axis.", TargetKind.AxisY),
+        new TargetOption("Line → Z axis", "Make the picked line / two holes parallel to the Z axis.", TargetKind.AxisZ),
+    };
 
-    public IReadOnlyList<OriginPolicy> Origins { get; } = Enum.GetValues<OriginPolicy>();
+    public IReadOnlyList<OriginOption> OriginOptions { get; } = new[]
+    {
+        new OriginOption("Move datum to origin", "Put the picked feature (the fitted plane/line point) at (0,0,0).", OriginPolicy.PlaneOrigin),
+        new OriginOption("Keep position", "Only rotate — leave the part where it sits.", OriginPolicy.Keep),
+        new OriginOption("Picked point to origin", "Put the last point you clicked at (0,0,0).", OriginPolicy.PickedPoint),
+        new OriginOption("Center bounding box", "Move the part's bounding-box center to (0,0,0).", OriginPolicy.BBoxCenter),
+    };
 
     public AsyncRelayCommand OpenCommand { get; }
 
@@ -73,29 +92,47 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
-    public TargetKind SelectedTargetKind
+    public TargetOption SelectedTarget
     {
-        get => _selectedTargetKind;
+        get => _selectedTarget;
         set
         {
-            if (SetProperty(ref _selectedTargetKind, value))
+            if (value is not null && SetProperty(ref _selectedTarget, value))
+            {
+                OnPropertyChanged(nameof(TargetDescription));
+                PushTarget();
+            }
+        }
+    }
+
+    public OriginOption SelectedOrigin
+    {
+        get => _selectedOrigin;
+        set
+        {
+            if (value is not null && SetProperty(ref _selectedOrigin, value))
+            {
+                OnPropertyChanged(nameof(OriginDescription));
+                PushTarget();
+            }
+        }
+    }
+
+    public bool Flip
+    {
+        get => _flip;
+        set
+        {
+            if (SetProperty(ref _flip, value))
             {
                 PushTarget();
             }
         }
     }
 
-    public OriginPolicy SelectedOrigin
-    {
-        get => _selectedOrigin;
-        set
-        {
-            if (SetProperty(ref _selectedOrigin, value))
-            {
-                PushTarget();
-            }
-        }
-    }
+    public string TargetDescription => _selectedTarget?.Description ?? string.Empty;
+
+    public string OriginDescription => _selectedOrigin?.Description ?? string.Empty;
 
     public bool HasObject => _scene.Current is not null;
 
@@ -179,7 +216,7 @@ public sealed class MainViewModel : ObservableObject
         _scene.Current?.Stack.Steps.ToArray() ?? Array.Empty<AlignmentStep>();
 
     private void PushTarget() =>
-        _scene.Target = new AlignmentTarget(_selectedTargetKind, _selectedOrigin, UpAxis.Z);
+        _scene.Target = new AlignmentTarget(_selectedTarget.Value, _selectedOrigin.Value, UpAxis.Z, _flip);
 
     private async Task OpenAsync()
     {

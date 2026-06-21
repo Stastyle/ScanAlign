@@ -60,8 +60,20 @@
                     <TextBlock Text="{Binding PromptText}" Style="{StaticResource SectionLabel}" TextWrapping="Wrap" />
 
                     <TextBlock Text="Snap to" Style="{StaticResource SectionLabel}" />
-                    <ComboBox ItemsSource="{Binding TargetKinds}" SelectedItem="{Binding SelectedTargetKind}" />
-                    <ComboBox ItemsSource="{Binding Origins}" SelectedItem="{Binding SelectedOrigin}" />
+                    <ComboBox ItemsSource="{Binding TargetOptions}" SelectedItem="{Binding SelectedTarget}"
+                              DisplayMemberPath="Label" ToolTip="{Binding TargetDescription}" />
+                    <TextBlock Text="{Binding TargetDescription}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11" TextWrapping="Wrap" Margin="2,3,2,2" />
+
+                    <TextBlock Text="Origin" Style="{StaticResource SectionLabel}" />
+                    <ComboBox ItemsSource="{Binding OriginOptions}" SelectedItem="{Binding SelectedOrigin}"
+                              DisplayMemberPath="Label" ToolTip="{Binding OriginDescription}" />
+                    <TextBlock Text="{Binding OriginDescription}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11" TextWrapping="Wrap" Margin="2,3,2,2" />
+
+                    <CheckBox Content="Flip face direction" IsChecked="{Binding Flip}" Margin="2,8,0,0"
+                              Foreground="{StaticResource TextPrimaryBrush}"
+                              ToolTip="Reverse which side of the face points toward the target (normal +Z vs -Z)." />
 
                     <TextBlock Text="{Binding PickInfo}" Margin="2,10,0,0" Foreground="{StaticResource AccentBrush}" />
                     <TextBlock Text="{Binding ResidualText}" Margin="2,2,0,0" Foreground="{StaticResource TextSecondaryBrush}" />

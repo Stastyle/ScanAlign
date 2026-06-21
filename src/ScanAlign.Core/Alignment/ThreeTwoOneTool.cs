@@ -41,6 +41,11 @@ public sealed class ThreeTwoOneTool : IAlignmentTool
         // Primary: fit the plane and rotate its normal onto the primary target direction.
         var fit = _planeFitter.Fit(new[] { picks[0].Position, picks[1].Position, picks[2].Position });
         var primaryDir = AlignmentMath.TargetDirection(target.Kind);
+        if (target.Flip)
+        {
+            primaryDir = -primaryDir;
+        }
+
         var r1 = AlignmentMath.RotationFromTo(fit.Plane.Normal, primaryDir);
 
         // Secondary: spin about the primary axis so the (in-plane) edge direction hits the secondary axis.

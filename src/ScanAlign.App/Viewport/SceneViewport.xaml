@@ -17,5 +17,24 @@
             <TextBlock x:Name="HintText" Foreground="#C6CAD0" FontSize="12"
                        Text="Open a scan (OBJ · PLY · STL) to begin." />
         </Border>
+
+        <!-- Axis legend -->
+        <Border Background="#CC232629" CornerRadius="6" Padding="9,6" Margin="10"
+                HorizontalAlignment="Right" VerticalAlignment="Top">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,1">
+                    <Rectangle Width="11" Height="11" Fill="#E24B4A" RadiusX="2" RadiusY="2" />
+                    <TextBlock Text="X" Foreground="#C6CAD0" FontSize="12" Margin="7,0,0,0" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,1">
+                    <Rectangle Width="11" Height="11" Fill="#5CC46A" RadiusX="2" RadiusY="2" />
+                    <TextBlock Text="Y" Foreground="#C6CAD0" FontSize="12" Margin="7,0,0,0" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,1">
+                    <Rectangle Width="11" Height="11" Fill="#378ADD" RadiusX="2" RadiusY="2" />
+                    <TextBlock Text="Z" Foreground="#C6CAD0" FontSize="12" Margin="7,0,0,0" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

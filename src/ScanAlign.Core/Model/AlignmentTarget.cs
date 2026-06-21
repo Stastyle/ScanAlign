@@ -34,8 +34,12 @@ public enum UpAxis
     Y,
 }
 
-/// <summary>The target an alignment tool maps its datums onto.</summary>
-public sealed record AlignmentTarget(TargetKind Kind, OriginPolicy Origin, UpAxis Up)
+/// <summary>
+/// The target an alignment tool maps its datums onto. <paramref name="Flip"/> reverses the target
+/// direction for plane snapping (e.g. the face's normal points to -Z instead of +Z), so the user can
+/// choose which side of the plane faces up.
+/// </summary>
+public sealed record AlignmentTarget(TargetKind Kind, OriginPolicy Origin, UpAxis Up, bool Flip = false)
 {
     /// <summary>Default target: snap a face to XY (normal to +Z), Z-up, origin unchanged.</summary>
     public static AlignmentTarget Default { get; } =
