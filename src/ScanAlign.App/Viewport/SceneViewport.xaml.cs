@@ -211,7 +211,8 @@ public partial class SceneViewport : UserControl
 
     private void Pick(Point p)
     {
-        if (_scene.ActiveTool is not { ExpectedDatum: DatumKind.Point })
+        // Point tools and centroid (cluster-averaging) tools both collect clicked surface points.
+        if (_scene.ActiveTool is not { ExpectedDatum: DatumKind.Point or DatumKind.Centroid })
         {
             return;
         }
