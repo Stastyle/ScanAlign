@@ -12,6 +12,7 @@ public sealed class SceneService : ISceneService
     private readonly MeshFormatRegistry _formats;
     private readonly IUnitDetector _unitDetector;
     private readonly IBoundingBox _boundingBox;
+    private readonly ICircleFitter _circleFitter;
 
     // Picks are organized into groups. For point-mode tools each click is its own group; for
     // centroid tools clicks accumulate in the current group until the user starts a new center.
@@ -24,11 +25,13 @@ public sealed class SceneService : ISceneService
         MeshFormatRegistry formats,
         AlignmentToolRegistry tools,
         IUnitDetector unitDetector,
-        IBoundingBox boundingBox)
+        IBoundingBox boundingBox,
+        ICircleFitter circleFitter)
     {
         _formats = formats;
         _unitDetector = unitDetector;
         _boundingBox = boundingBox;
+        _circleFitter = circleFitter;
         Tools = tools.Tools;
     }
 
@@ -50,17 +53,17 @@ public sealed class SceneService : ISceneService
 
     private bool CentroidMode => ActiveTool?.ExpectedDatum == DatumKind.Centroid;
 
-    /// <summary>One datum per non-empty group: its averaged center, with the raw points attached.</summary>
+    /// <summary>One datum per non-empty group: its estimated center, with the raw points attached.</summary>
     public IReadOnlyList<Datum> Picks => _groups
         .Where(g => g.Count > 0)
-        .Select(g => new Datum(CentroidMode ? DatumKind.Centroid : DatumKind.Point, Centroid(g), SupportPoints: g.ToList()))
+        .Select(g => new Datum(CentroidMode ? DatumKind.Centroid : DatumKind.Point, GroupCenter(g), SupportPoints: g.ToList()))
         .ToList();
 
     /// <summary>Every raw clicked point (across all groups), for rendering pick markers.</summary>
     public IReadOnlyList<Vector3> AllPickedPoints => _groups.SelectMany(g => g).ToList();
 
-    /// <summary>The averaged center of each non-empty group, for rendering center markers.</summary>
-    public IReadOnlyList<Vector3> Centroids => _groups.Where(g => g.Count > 0).Select(Centroid).ToList();
+    /// <summary>The estimated center of each non-empty group, for rendering center markers.</summary>
+    public IReadOnlyList<Vector3> Centroids => _groups.Where(g => g.Count > 0).Select(GroupCenter).ToList();
 
     /// <summary>True when the active tool clusters points into averaged centers.</summary>
     public bool IsCentroidTool => CentroidMode;
@@ -258,7 +261,37 @@ public sealed class SceneService : ISceneService
         return ActiveTool.Solve(Picks, _target);
     }
 
-    private static Vector3 Centroid(IReadOnlyList<Vector3> pts)
+    /// <summary>
+    /// The center a pick group represents. For centroid tools this is a least-squares circle center —
+    /// so clustering many clicks in one spot doesn't bias it (points on the same circle all agree), and
+    /// it converges on the true center as boundary points are added. Falls back to the plain average for
+    /// point tools or when a circle can't be fit reliably (too few points, collinear, or wildly off).
+    /// </summary>
+    private Vector3 GroupCenter(IReadOnlyList<Vector3> group)
+    {
+        if (!CentroidMode || group.Count < 3)
+        {
+            return Average(group);
+        }
+
+        var avg = Average(group);
+        try
+        {
+            var fit = _circleFitter.Fit(group);
+            var spread = group.Max(p => Vector3.Distance(p, avg));
+            var sane = spread > 1e-6f
+                && Vector3.Distance(fit.Circle.Center, avg) <= 5f * spread
+                && fit.Circle.Radius <= 50f * spread
+                && !float.IsNaN(fit.Circle.Center.X);
+            return sane ? fit.Circle.Center : avg;
+        }
+        catch (ArgumentException)
+        {
+            return avg;
+        }
+    }
+
+    private static Vector3 Average(IReadOnlyList<Vector3> pts)
     {
         var sum = Vector3.Zero;
         foreach (var p in pts)

@@ -20,7 +20,7 @@ public class CentroidGroupingTests : IDisposable
     public void Dispose() => File.Delete(_path);
 
     private static SceneService NewService() => new(
-        new MeshFormatRegistry(), new AlignmentToolRegistry(), new UnitDetector(), new BoundingBox());
+        new MeshFormatRegistry(), new AlignmentToolRegistry(), new UnitDetector(), new BoundingBox(), new CircleFitter());
 
     [Fact]
     public async Task Centroid_origin_averages_a_cluster_into_one_center()
@@ -40,6 +40,35 @@ public class CentroidGroupingTests : IDisposable
         Assert.Equal(4, svc.CurrentClusterSize);
         Assert.True(Vector3.Distance(svc.Picks[0].Position, new Vector3(10, 0, 0)) < 1e-4f);
         Assert.True(svc.Proposal!.IsComplete);
+    }
+
+    [Fact]
+    public async Task Clustered_clicks_on_a_circle_do_not_bias_the_center()
+    {
+        var svc = NewService();
+        await svc.LoadAsync(_path);
+        svc.SelectTool("centroid-origin");
+
+        var center = new Vector3(5, 5, 0);
+        const float r = 3f;
+        // Eight points bunched on one side of the rim, two on the far side — all on the true circle.
+        var degrees = new[] { 0f, 10, 20, 30, 40, 50, 60, 70, 180, 200 };
+        var sum = Vector3.Zero;
+        foreach (var deg in degrees)
+        {
+            var a = deg * MathF.PI / 180f;
+            var p = center + new Vector3(MathF.Cos(a) * r, MathF.Sin(a) * r, 0);
+            svc.AddPick(new Datum(DatumKind.Point, p));
+            sum += p;
+        }
+
+        var plainAverage = sum / degrees.Length;
+        var fittedCenter = svc.Picks[0].Position;
+
+        // The circle fit recovers the true center despite the lopsided clicking...
+        Assert.True(Vector3.Distance(fittedCenter, center) < 0.05f, $"fitted center {fittedCenter} should equal {center}");
+        // ...whereas a plain average would be visibly pulled toward the cluster.
+        Assert.True(Vector3.Distance(plainAverage, center) > 0.3f, "the average should be biased by the clustering");
     }
 
     [Fact]

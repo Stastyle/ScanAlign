@@ -24,7 +24,7 @@ public class IntegrationPipelineTests : IDisposable
     public void Dispose() => Directory.Delete(_dir, recursive: true);
 
     private static SceneService NewService() => new(
-        new MeshFormatRegistry(), new AlignmentToolRegistry(), new UnitDetector(), new BoundingBox());
+        new MeshFormatRegistry(), new AlignmentToolRegistry(), new UnitDetector(), new BoundingBox(), new CircleFitter());
 
     private static MeshData PosedBox()
     {

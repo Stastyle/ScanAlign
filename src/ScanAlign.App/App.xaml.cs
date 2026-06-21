@@ -46,6 +46,7 @@ public partial class App : Application
         services.AddSingleton(_ => new AlignmentToolRegistry());
         services.AddSingleton<IUnitDetector, UnitDetector>();
         services.AddSingleton<IBoundingBox, BoundingBox>();
+        services.AddSingleton<ICircleFitter, CircleFitter>();
 
         // App.
         services.AddSingleton<ISceneService, SceneService>();

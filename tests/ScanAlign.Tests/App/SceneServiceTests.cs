@@ -23,7 +23,8 @@ public class SceneServiceTests : IDisposable
         new MeshFormatRegistry(),
         new AlignmentToolRegistry(),
         new UnitDetector(),
-        new BoundingBox());
+        new BoundingBox(),
+        new CircleFitter());
 
     private string WritePointCloudObj(IEnumerable<Vector3> points, string name)
     {
