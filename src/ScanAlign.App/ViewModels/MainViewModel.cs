@@ -173,7 +173,10 @@ public sealed class MainViewModel : ObservableObject
 
     public string UnitText => _scene.Current is { } o ? o.Original.Unit.ToString().ToLowerInvariant() : string.Empty;
 
-    public IReadOnlyList<AlignmentStep> History => _scene.Current?.Stack.Steps ?? Array.Empty<AlignmentStep>();
+    // A fresh array each read: the underlying List grows in place, so returning the same reference
+    // would leave the bound ItemsControl unaware that steps were added.
+    public IReadOnlyList<AlignmentStep> History =>
+        _scene.Current?.Stack.Steps.ToArray() ?? Array.Empty<AlignmentStep>();
 
     private void PushTarget() =>
         _scene.Target = new AlignmentTarget(_selectedTargetKind, _selectedOrigin, UpAxis.Z);
