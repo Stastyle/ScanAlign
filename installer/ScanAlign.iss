@@ -1,12 +1,12 @@
 ; ScanAlign installer script (Inno Setup 6).
 ; Compiled by build-release.ps1, which passes the version and the published
 ; source/output directories on the command line, e.g.:
-;   ISCC /DMyAppVersion=0.1.0-alpha /DMyAppVersionInfo=0.1.0.0 \
+;   ISCC /DMyAppVersion=0.1-alpha-1 /DMyAppVersionInfo=0.1.0.0 \
 ;        /DSourceDir=...\artifacts\publish /DOutputDir=...\artifacts ScanAlign.iss
 
 #define MyAppName "ScanAlign"
 #ifndef MyAppVersion
-  #define MyAppVersion "0.1.0-alpha"
+  #define MyAppVersion "0.1-alpha-1"
 #endif
 #ifndef MyAppVersionInfo
   #define MyAppVersionInfo "0.1.0.0"

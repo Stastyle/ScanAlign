@@ -2,7 +2,7 @@
 
 All notable changes to ScanAlign are documented here.
 
-## [0.1.0-alpha] — 2026-06-21
+## [0.1-alpha-1] — 2026-06-28
 
 First public alpha.
 
