@@ -10,6 +10,16 @@ and square.
 See [PLAN.md](PLAN.md) for the product vision, [IMPLEMENTATION.md](IMPLEMENTATION.md) for the
 architecture, and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations.
 
+## Download
+
+Grab the latest build from the [**Releases**](https://github.com/Stastyle/ScanAlign/releases) page:
+
+- **`ScanAlign-Setup-<version>.exe`** — Windows installer (Start-menu shortcut, optional desktop
+  icon, uninstaller).
+- **`ScanAlign-<version>-win-x64-portable.zip`** — portable; unzip and run `ScanAlign.App.exe`.
+
+Both are **self-contained** — they bundle the .NET 8 runtime, so nothing else needs to be installed.
+
 ## Status
 
 Early **alpha**. The full pipeline works end-to-end — load → pick a tool → set datums → live
